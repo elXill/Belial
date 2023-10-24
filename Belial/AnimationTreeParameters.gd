@@ -1,5 +1,7 @@
 extends AnimationTree
 
+@export var ready_anim : bool
+
 @export var forward : bool
 @export var back 	: bool
 @export var left 	: bool
