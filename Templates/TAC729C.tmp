@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="TAC" load_steps=2 format=3 uid="uid://bun6t5114faqn"]
+
+[ext_resource type="Script" path="res://Templates/TAC.gd" id="1_ab6u8"]
+
+[resource]
+script = ExtResource("1_ab6u8")

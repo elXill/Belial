@@ -1,0 +1,126 @@
+[gd_scene load_steps=10 format=3 uid="uid://bqji1qyr1t0u"]
+
+[ext_resource type="Script" path="res://Templates/CameraScript.gd" id="2_4krvh"]
+[ext_resource type="Script" path="res://Belial/DebugLabel.gd" id="3_1sono"]
+[ext_resource type="Script" path="res://Templates/Intervention.gd" id="4_mebi0"]
+[ext_resource type="PackedScene" uid="uid://b0etdhktmosdi" path="res://Belial/Belial.tscn" id="5_sbtpl"]
+[ext_resource type="Material" uid="uid://o5k71kj5ik4j" path="res://Environment/Material/Floor_Mat.tres" id="6_6dby3"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_0xm2l"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_5n5xi"]
+font_size = 12
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_l7spr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wwc6m"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="InterventionNode" type="Node" parent="."]
+process_mode = 3
+script = ExtResource("4_mebi0")
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 1.11759e-08, 2.98023e-08, 3.72529e-09, 1, 0, 5.96046e-08, 0, 1, 0.656113, 2.44421e-09, 2.46072)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 6.61745e-24, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_0xm2l")
+
+[node name="Belial" parent="." instance=ExtResource("5_sbtpl")]
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.981704, 0.125979, 0.142784, -0.154586, 0.965114, 0.211325, -0.11118, -0.229531, 0.966931, 0.23991, 3.54868, -0.0388135)
+light_color = Color(0.984314, 0.921569, 0.890196, 1)
+shadow_enabled = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.959259, 0.224696, -0.17127, 0.109381, 0.854293, 0.508153, 0.260494, 0.468717, -0.844066, 0, 1.78266, 0)
+light_color = Color(0.717647, 0.815686, 1, 1)
+light_energy = 0.2
+light_angular_distance = 10.0
+directional_shadow_mode = 0
+sky_mode = 1
+
+[node name="AnimDebugCanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+
+[node name="CameraMarginContainer" type="MarginContainer" parent="AnimDebugCanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GridContainer" type="GridContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(574, 648)
+render_target_update_mode = 4
+
+[node name="BackCam" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer/SubViewport" node_paths=PackedStringArray("target")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+fov = 45.0
+script = ExtResource("2_4krvh")
+target = NodePath("../../../../../../Belial/CameraPivot/SpringArm3D/BackCameraPoint")
+look_target_address = "/root/Node3D/Belial/CameraPivot"
+
+[node name="SubViewportContainer2" type="SubViewportContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer2"]
+handle_input_locally = false
+size = Vector2i(574, 648)
+render_target_update_mode = 4
+
+[node name="SideCam" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer2/SubViewport" node_paths=PackedStringArray("target")]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0, 0)
+fov = 45.0
+script = ExtResource("2_4krvh")
+target = NodePath("../../../../../../Belial/CameraPivot/SpringArm3D2/SideCameraPoint")
+look_target_address = "/root/Node3D/Belial/CameraPivot"
+
+[node name="Panel" type="Panel" parent="AnimDebugCanvasLayer"]
+offset_left = 866.0
+offset_right = 1150.0
+offset_bottom = 196.0
+
+[node name="Label" type="Label" parent="AnimDebugCanvasLayer/Panel"]
+layout_mode = 0
+offset_left = 27.0
+offset_top = 12.0
+offset_right = 261.0
+offset_bottom = 173.0
+label_settings = SubResource("LabelSettings_5n5xi")
+script = ExtResource("3_1sono")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
+disable_mode = 1
+
+[node name="Floor" type="MeshInstance3D" parent="StaticBody3D"]
+material_override = ExtResource("6_6dby3")
+mesh = SubResource("PlaneMesh_l7spr")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, -1, 0)
+shape = SubResource("BoxShape3D_wwc6m")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.12555, 1.06903, 0)
+use_collision = true
+size = Vector3(1, 2.17634, 1)
