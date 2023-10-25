@@ -1,6 +1,8 @@
 extends AnimationTree
 
-@export var ready_anim : bool
+class_name AnimationTreeParameters
+
+@export var char_ready : bool
 
 @export var forward : bool
 @export var back 	: bool
@@ -9,3 +11,10 @@ extends AnimationTree
 
 @export var immobile_rotation_left  	: bool
 @export var immobile_rotation_right 	: bool
+var frame_data : int
+
+
+func _physics_process(delta):
+	frame_data = roundf(get("parameters/playback").get_current_play_position()*60)
+
+

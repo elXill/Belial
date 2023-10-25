@@ -4,3 +4,5 @@
  Right now it is in Animation Tree is in rough state but i think i will fix it in short..
 
  But still needs a lot of additions.
+
+Notes: In oni back to right/left turn animation chains change if she is in fight mode.

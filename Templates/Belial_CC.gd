@@ -8,6 +8,7 @@ class_name Belial_CC
 var camera_pivot : Node3D
 var my_anim_tree : AnimationTree = null
 var char_body : Node3D
+var anim_tree_parameters : AnimationTreeParameters
 
 var my_anim_player : AnimationPlayer = null
 
@@ -51,6 +52,7 @@ var immobile_rot_diff_allthetime
 var x = 0
 
 enum ANIM_STATES {
+	NONE,
 	STAND,
 	FORWARD,
 	BACK,
@@ -70,6 +72,9 @@ enum ANIM_STATES {
 }
 
 static var anim_state_dic : Dictionary = {
+	
+	"THBE-0_Rest" : ANIM_STATES.NONE,
+	
 	"THBE_COM-Idle" : ANIM_STATES.STAND,
 	"Looper" : ANIM_STATES.STAND,
 	
@@ -124,12 +129,14 @@ func _ready():
 	
 	my_skeleton = get_node("../Belial_Godot_SemiConnectRig/Skeleton3D")
 	my_anim_tree = get_node ("../AnimationTree") ## Gets animation player
+	anim_tree_parameters = my_anim_tree
 	char_body = get_node ("../../../Belial")
 	body_base_transform.basis = char_body.basis
-	my_anim_tree.set("parameters/conditions/ready", true)
+	anim_tree_parameters.char_ready = true
 	my_anim_player = get_node("../AnimationPlayer")
 	camera_pivot = get_node("../../CameraPivot")
 	pivot_base_y = camera_pivot.basis.get_euler().y
+
 	
 	_bone_tips[0] = get_node("../Belial_Godot_SemiConnectRig/Skeleton3D/BoneAttachment_Neck/Neck_Mark")
 	_bone_tips[1] = get_node("../Belial_Godot_SemiConnectRig/Skeleton3D/BoneAttachment_Head/Head_Mark")
@@ -155,7 +162,6 @@ func _physics_process(delta):
 	
 	_camera_rotation(delta)
 	_input_process(delta)
-	#my_anim_tree.set("parameters/conditions/forward", true)
 	_state_logic(delta, current_state)
 
 	#_animation_override(delta)
@@ -205,17 +211,13 @@ func _immobile_rotation():
 		
 		if (immobile_rot_diff>deg_to_rad(70)):
 			immobile_turn = true
-			my_anim_tree.set("parameters/conditions/immobile_rotation_left", true)
-			my_anim_tree.set("parameters/conditions/immobile_rotation_right", false)
-			my_anim_tree.set("parameters/conditions/not_immobile_rotation_left", false)
-			my_anim_tree.set("parameters/conditions/not_immobile_rotation_right", true)
+			anim_tree_parameters.immobile_rotation_left = true
+			anim_tree_parameters.immobile_rotation_right = false
 
 		if (immobile_rot_diff<deg_to_rad(-70)):
 			immobile_turn = true
-			my_anim_tree.set("parameters/conditions/immobile_rotation_right", true)
-			my_anim_tree.set("parameters/conditions/immobile_rotation_left", false)
-			my_anim_tree.set("parameters/conditions/not_immobile_rotation_left", true)
-			my_anim_tree.set("parameters/conditions/not_immobile_rotation_right", false)
+			anim_tree_parameters.immobile_rotation_right = true
+			anim_tree_parameters.immobile_rotation_left = false
 
 		if(immobile_turn == true):
 			if(immobile_rot_diff > 0):
@@ -236,10 +238,8 @@ func _immobile_rotation():
 			immobile_rot_char_y = immobile_rot
 			immobile_turn = false
 			immobile_turn_0 = true
-			my_anim_tree.set("parameters/conditions/immobile_rotation_left", false)
-			my_anim_tree.set("parameters/conditions/immobile_rotation_right", false)
-			my_anim_tree.set("parameters/conditions/not_immobile_rotation_left", true)
-			my_anim_tree.set("parameters/conditions/not_immobile_rotation_right", true)
+			anim_tree_parameters.immobile_rotation_left = false
+			anim_tree_parameters.immobile_rotation_right = false
 
 #		deg_to_rad(5) basta yavas sone yavas yavas ivme kazandır
 
@@ -278,29 +278,21 @@ func _root_motion():
 
 func _input_process(_delta):
 	if forward == true:
-		my_anim_tree.set("parameters/conditions/forward", true)
-		my_anim_tree.set("parameters/conditions/not_forward", false)
+		anim_tree_parameters.forward = true
 	else :
-		my_anim_tree.set("parameters/conditions/forward", false)
-		my_anim_tree.set("parameters/conditions/not_forward", true)
+		anim_tree_parameters.forward = false
 	if back == true:
-		my_anim_tree.set("parameters/conditions/back", true)
-		my_anim_tree.set("parameters/conditions/not_back", false)
+		anim_tree_parameters.back = true
 	else :
-		my_anim_tree.set("parameters/conditions/back", false)
-		my_anim_tree.set("parameters/conditions/not_back", true)
+		anim_tree_parameters.back = false
 	if left == true:
-		my_anim_tree.set("parameters/conditions/left", true)
-		my_anim_tree.set("parameters/conditions/not_left", false)
+		anim_tree_parameters.left = true
 	else :
-		my_anim_tree.set("parameters/conditions/left", false)
-		my_anim_tree.set("parameters/conditions/not_left", true)
+		anim_tree_parameters.left = false
 	if right == true:
-		my_anim_tree.set("parameters/conditions/right", true)
-		my_anim_tree.set("parameters/conditions/not_right", false)
+		anim_tree_parameters.right = true
 	else :
-		my_anim_tree.set("parameters/conditions/right", false)
-		my_anim_tree.set("parameters/conditions/not_right", true)
+		anim_tree_parameters.right = false
 
 func _unhandled_input(event):
 	if Input.is_action_pressed("Forward"):

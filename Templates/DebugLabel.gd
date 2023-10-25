@@ -29,7 +29,6 @@ func _ready():
 	my_state_machine_playback = my_anim_tree.get("parameters/playback")
 	print(my_state_machine_playback)
 	my_anim_tree.animation_started.connect(_st)
-#	my_anim_tree.animation_finished.connect(_end)
 	my_anim_player.get_current_animation()
 	
 	pass # Replace with function body.
@@ -39,7 +38,7 @@ func _ready():
 func _physics_process(_delta):
 	#my_anim_tree.
 	call_deferred("_write")
-	my_state_machine_playback.get
+	print(roundf(my_state_machine_playback.get_current_play_position()*60))
 	
 func _write():
 	
