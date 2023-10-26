@@ -195,6 +195,7 @@ func _state_logic(delta, state : ANIM_STATES):
 			_root_motion()
 		ANIM_STATES.CHANGE_DIRECTION:
 			_rotateable_motion()
+			_diagonal_rotation_calc()
 			_root_motion()
 			
 
@@ -372,31 +373,27 @@ func _diagonal_rotation_calc():
 	var _diagonal_rotation_target : float = 0
 	
 	if(current_state == ANIM_STATES.FORWARD or current_state == ANIM_STATES.FORWARD_STEP):
-		if (forward == true):
-			if (right == true):
-				_diagonal_rotation_target = deg_to_rad(-45)
-			if (left == true):
-				_diagonal_rotation_target = deg_to_rad(+45)
+		if (right == true):
+			_diagonal_rotation_target = deg_to_rad(-45)
+		if (left == true):
+			_diagonal_rotation_target = deg_to_rad(+45)
 	
 	if(current_state == ANIM_STATES.BACK or current_state == ANIM_STATES.BACK_STEP):
-		if (back == true):
-			if (right == true):
-				_diagonal_rotation_target = deg_to_rad(+45)
-			if (left == true):
-				_diagonal_rotation_target = deg_to_rad(-45)
+		if (right == true):
+			_diagonal_rotation_target = deg_to_rad(+45)
+		if (left == true):
+			_diagonal_rotation_target = deg_to_rad(-45)
 	
 	if(current_state == ANIM_STATES.LEFT or current_state == ANIM_STATES.LEFT_STEP):
-		if(left==true):
-			if (forward == true):
-				_diagonal_rotation_target = deg_to_rad(+45)
-			if (back == true):
-				_diagonal_rotation_target = deg_to_rad(-45)
+		if (forward == true):
+			_diagonal_rotation_target = deg_to_rad(+45)
+		if (back == true):
+			_diagonal_rotation_target = deg_to_rad(-45)
 	if (current_state == ANIM_STATES.RIGHT or current_state == ANIM_STATES.RIGHT_STEP):
-		if (right == true):
-			if (forward == true):
-				_diagonal_rotation_target = deg_to_rad(-45)
-			if (back == true):
-				_diagonal_rotation_target = deg_to_rad(+45)
+		if (forward == true):
+			_diagonal_rotation_target = deg_to_rad(-45)
+		if (back == true):
+			_diagonal_rotation_target = deg_to_rad(+45)
 
 
 	
