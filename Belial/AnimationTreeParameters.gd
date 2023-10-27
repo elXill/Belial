@@ -14,7 +14,7 @@ class_name AnimationTreeParameters
 var frame_data : int
 
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	frame_data = roundf(get("parameters/playback").get_current_play_position()*60)
 
 

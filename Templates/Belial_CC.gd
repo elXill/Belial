@@ -24,13 +24,11 @@ var surplus_cam_rot_vel: float = 0
 var surplus_cam_rot_delta: float = 0
 var immobile_rot_char_y: float = 0
 
+var old_bone_positions: Array[Vector3] = [Vector3(0,0,0),Vector3(0,0,0)]
+
 
 var char_base_y : float = 0
 var current_state : ANIM_STATES
-
-
-
-var _bone_tips : Array[Marker3D] = [Marker3D.new(), Marker3D.new()]
 
 
 var body_base_transform : Transform3D = Transform3D()
@@ -138,9 +136,6 @@ func _ready():
 	pivot_base_y = camera_pivot.basis.get_euler().y
 
 	
-	_bone_tips[0] = get_node("../Belial_Godot_SemiConnectRig/Skeleton3D/BoneAttachment_Neck/Neck_Mark")
-	_bone_tips[1] = get_node("../Belial_Godot_SemiConnectRig/Skeleton3D/BoneAttachment_Head/Head_Mark")
-	
 	bone_array[0] = my_skeleton.find_bone("DEF-spine.003")
 	bone_array[1] = my_skeleton.find_bone("DEF-neck")
 	bone_array[2] = my_skeleton.find_bone("DEF-head")
@@ -160,17 +155,16 @@ func _physics_process(delta):
 	x = x+1
 	print(x)
 	
-	_camera_rotation(delta)
+	_camera_rotation()
 	_input_process(delta)
-	_state_logic(delta, current_state)
-
-	#_animation_override(delta)
-	immobile_rot_diff_allthetime = delta_angle(immobile_rot_char_y, camera_rotation.y)
+	_state_logic(current_state)
+	immobile_rot_diff_allthetime = Belial_CC.delta_angle(immobile_rot_char_y, camera_rotation.y)
+	_animation_override(delta)
 	_apply_rotations(delta)
 	
 	
 
-func _state_logic(delta, state : ANIM_STATES):
+func _state_logic(state : ANIM_STATES):
 	match state:
 		##Immobile; standing or turning
 		ANIM_STATES.STAND, ANIM_STATES.STAND_COM_TURN_LEFT,ANIM_STATES.STAND_COM_TURN_RIGHT:
@@ -203,7 +197,7 @@ func _state_logic(delta, state : ANIM_STATES):
 func _immobile_rotation():
 	
 	
-	immobile_rot_diff = delta_angle(immobile_rot_char_y, camera_rotation.y)
+	immobile_rot_diff = Belial_CC.delta_angle(immobile_rot_char_y, camera_rotation.y)
 	
 	#If turnable states and diff > 70 --> immobile turn = true
 	if(current_state == ANIM_STATES.STAND or \
@@ -242,27 +236,31 @@ func _immobile_rotation():
 			anim_tree_parameters.immobile_rotation_left = false
 			anim_tree_parameters.immobile_rotation_right = false
 
-#		deg_to_rad(5) basta yavas sone yavas yavas ivme kazandır
-
 
 func _rotateable_motion():
-	immobile_rot = rotate_toward(immobile_rot,camera_rotation.y, deg_to_rad(6))
+	##This makes immobile rotation not go over 360 and cause multiple full rotations
+	immobile_rot_char_y = immobile_rot
+	
+	##If you start running while immobile rotation animation in effect, its parameters doesn't turn into false so here we are doing that just in case
+	anim_tree_parameters.immobile_rotation_left = false
+	anim_tree_parameters.immobile_rotation_right = false
+	
+	immobile_rot = Belial_CC.rotate_toward(immobile_rot,camera_rotation.y, deg_to_rad(6))
 
 func _apply_rotations(delta):
+	
 	##Apply character rotation
-
 	char_body.basis = Basis.from_euler(Vector3(0.0, immobile_rot + diagonal_rot_total, 0.0))
 	
 	
-	##Apply mouse rotation
+	##Are we gonna add surplus rotation or subtract from it
 	if(mouse_dirty):
 		mouse_dirty= false
-
 		_surplus_rotation_calc_add(delta)
 	
-	_surplus_rotation_calc_sub(delta)
+	_surplus_rotation_calc_sub()
 
-
+	##Apply mouse rotation
 	camera_pivot.basis = Basis.from_euler(Vector3( \
 	camera_rotation.x,  \
 	camera_rotation.y + surplus_rotation_y - immobile_rot-diagonal_rot_total, \
@@ -273,10 +271,11 @@ func _apply_rotations(delta):
 
 
 
-
+##Apply root motion, considering character rotation for diagonal runs
 func _root_motion():
 	char_body.position += my_anim_tree.get_root_motion_position().rotated(Vector3.UP ,char_body.rotation.y)
 
+##Apply inputs to animation parameters
 func _input_process(_delta):
 	if forward == true:
 		anim_tree_parameters.forward = true
@@ -295,6 +294,7 @@ func _input_process(_delta):
 	else :
 		anim_tree_parameters.right = false
 
+##Get Inputs
 func _unhandled_input(event):
 	if Input.is_action_pressed("Forward"):
 		forward = true		
@@ -323,9 +323,8 @@ func _unhandled_input(event):
 	if Input.is_action_just_pressed("ui_accept"):
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
-
-func _camera_rotation(delta):
-#Mause Rotation
+##Mouse Camera Rotation
+func _camera_rotation():
 	
 	if(mouse_dirty):
 		
@@ -338,9 +337,10 @@ func _camera_rotation(delta):
 		
 		camera_rotation.y = camera_rotation.y - ((2*PI)* floor((camera_rotation.y+(PI))/ (2*PI)))
 	
-	#Mause Input of Surplus Y Rotation 
+		#Mause Input of Surplus Y Rotation 
 		surplus_rotation_y = surplus_rotation_y + mouse_xy.x*sensitivity/2
 
+##Surplus rotation is when mouse moved so much camera lags behind a bit, so camera is not always at the back of character
 func _surplus_rotation_calc_add(delta):
 #Tracking speed
 	if (surplus_rotation_y/PI <0.2):
@@ -350,8 +350,8 @@ func _surplus_rotation_calc_add(delta):
 		if(surplus_cam_rot_vel>delta*8):
 			surplus_cam_rot_vel = surplus_cam_rot_vel - delta
 
-func _surplus_rotation_calc_sub(delta):
-		#Surplus rotation tracking movement
+func _surplus_rotation_calc_sub():
+	#Surplus rotation tracking movement
 	if(surplus_rotation_y > 0):
 		surplus_rotation_y = surplus_rotation_y-(surplus_cam_rot_vel)
 		surplus_cam_rot_delta = -surplus_cam_rot_vel
@@ -369,6 +369,7 @@ func _surplus_rotation_calc_sub(delta):
 	elif(surplus_rotation_y< -PI):
 		surplus_rotation_y = -surplus_rotation_y
 
+##If two movement buttons are pressed, with the exception of opposites, rotate character slowly according to buttons pressed
 func _diagonal_rotation_calc():
 	var _diagonal_rotation_target : float = 0
 	
@@ -407,19 +408,14 @@ func _diagonal_rotation_calc():
 	if (!is_equal_approx(_diagonal_rotation_target, diagonal_rot_total) and _diagonal_rotation_target < diagonal_rot_total):
 		diagonal_rot_step = deg_to_rad(3)
 		diagonal_rot_total = diagonal_rot_total - diagonal_rot_step
-		
 
 
-
-
-
+## Override animation to make character look around according to camera rotation
 func _animation_override(delta):
 	
-	var _original_bone_transforms : Array[Transform3D] = [Transform3D(),Transform3D(),Transform3D()]
 	var _head_look_around : Vector2 = Vector2(char_body.rotation.x-camera_rotation.x, char_body.rotation.y-camera_rotation.y)
 	
 
-	##Head, Neck, Torso
 	_look_bone_rotation(delta, bone_array, _head_look_around)
 
 	
@@ -432,38 +428,48 @@ func _look_bone_rotation(_delta, bone_ids : Array[int], rot_copy : Vector2):
 	var _original_bone_transform : Array[Transform3D] = [Transform3D(),Transform3D(),Transform3D()]
 	var _new_bone_transform : Array[Transform3D] = [Transform3D(),Transform3D(),Transform3D()]
 	var _rot_val : Vector2 = rot_copy
-	const _weights: Array[float] = [0.3,0.5,1]
+	const _weights: Array[float] = [0.4,0.4,0.3]
 	
+	print("-------------")
 	print("Head look Y RAW:" , rad_to_deg(_rot_val.y))
 	print("body:", rad_to_deg(char_body.rotation.y))
+	print("cam rot y:", rad_to_deg(camera_rotation.y))
 	
-	rot_copy.y = rot_copy.y - ((2*PI)* floor(camera_rotation.y / (2*PI)))
+	
+	
+	print("rot_copy y:" , rad_to_deg(rot_copy.y))
+	
+	rot_copy.y = rot_copy.y - ((2*PI)* floor((rot_copy.y+(PI))/ (2*PI)))
+	
+	print("rot_copy.y +-180 loop:" , rad_to_deg(_rot_val.y))
 	
 		##Wrap-up rotation nicely to front 180 degree
 	if (rot_copy.y > PI/2 and rot_copy.y < PI):
-		_rot_val.y = PI - rot_copy.y
+		print("BAM!")
+		_rot_val.y = PI - rot_copy.y ##VE PI nin KATLARI
 	elif (rot_copy.y > -PI and rot_copy.y < -PI/2):
+		print("B0M!")
 		_rot_val.y = -PI - rot_copy.y
-	elif(rot_copy.y > PI or rot_copy.y < -PI):
-		_rot_val.y = 0
-	
-	print("Head look Y:" , rad_to_deg(_rot_val.y))
+#	elif(rot_copy.y > PI or rot_copy.y < -PI):?????
+#		_rot_val.y = 0???????
+
+
+	print("Head look Y end:" , rad_to_deg(_rot_val.y))
 
 	_rot_val.x = clampf(_rot_val.x + deg_to_rad(-5),deg_to_rad(-30),deg_to_rad(30))
 	
 		#Set new bone rotations to torso, neck and head, according to mouse look
-	for bones in len(bone_ids):
+		
+	for bones in len(bone_ids): 
 		
 		if(bones!=0):
-			#_new_bone_transform[bones].origin =  _bone_tips[bones-1].global_transform.origin - char_body.position
-			_new_bone_transform[bones] = my_skeleton.get_bone_global_pose_no_override(bone_ids[bones])
-			
+			_new_bone_transform[bones] = my_skeleton.get_bone_global_pose(my_skeleton.get_bone_parent(bone_ids[bones]))*my_skeleton.get_bone_pose(bone_ids[bones])
 		else:
 			_new_bone_transform[bones] = my_skeleton.get_bone_global_pose_no_override(bone_ids[bones])
 		
 			
 		_new_bone_transform[bones].basis = Basis.from_euler(Vector3(_new_bone_transform[bones].basis.get_euler().x- _rot_val.x,
-		_new_bone_transform[bones].basis.get_euler().y- _rot_val.y, 
+		_new_bone_transform[bones].basis.get_euler().y- _rot_val.y,
 		_new_bone_transform[bones].basis.get_euler().z))
 
 		my_skeleton.set_bone_global_pose_override(bone_ids[bones], _new_bone_transform[bones],_weights[bones], true)

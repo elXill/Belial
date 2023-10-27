@@ -75,7 +75,7 @@ func _write():
 #	"G_Rotation = " + str(rad_to_deg(c_c.char_body.rotation.y)) + " + " + str(c_c.diagonal_rot_total) + "\n" + \
 #	"foward = "  + str(c_c.forward) + "\n" + \
 #	"back = "  + str(c_c.back) + "\n" + \
-#	"left = "  + str(c_c.left) + "\n" + \
+#	"left = "  + str(c_c.left) + "\n" + \6
 #	"right = "  + str(c_c.right) + "\n" + \
 
 	"Delta Cam-Char : " + str(rad_to_deg(c_c.immobile_rot_diff))+ "\n" + \
@@ -95,7 +95,7 @@ func _write():
 	"camera_rotation.y = " + str(rad_to_deg(c_c.camera_rotation.y)) + "\n" + \
 	"surplus_rotation_y= "  + str(rad_to_deg(c_c.surplus_rotation_y)) + "\n" + \
 	"immobile_rot= "  + str(rad_to_deg(-1*c_c.immobile_rot)) + "\n" + \
-	"CAMERA TOTAL-real= " + str(c_c.camera_pivot.basis.get_euler().y) + "\n" + \
+	"CAMERA TOTAL-real= " + str(rad_to_deg(c_c.camera_pivot.basis.get_euler().y)) + "\n" + \
 	"CAMERA TOTAL= "  + str(rad_to_deg(c_c.camera_rotation.y + c_c.surplus_rotation_y - c_c.immobile_rot))+ "\n" + \
 	
 	"\n" + \

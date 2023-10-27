@@ -15,3 +15,5 @@ Notes:
 		
 		transition switch AtEnd is not waitng till end it waits till; end - xfade1 - xfade2
 	https://github.com/godotengine/godot/issues/83994
+
+	- Fix Mobile-Immobile, multiple turns bug..
