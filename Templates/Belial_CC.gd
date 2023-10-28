@@ -218,6 +218,7 @@ func _immobile_rotation():
 			if(immobile_rot_diff > 0):
 				immobile_rot = immobile_rot + deg_to_rad(6)
 				if (immobile_rot > immobile_rot_char_y + immobile_rot_diff):
+					immobile_rot_char_y = immobile_rot_char_y - ((2*PI)* floor((immobile_rot_char_y+(PI))/ (2*PI)))
 					immobile_rot = immobile_rot_char_y + immobile_rot_diff
 					immobile_turn_0 = false
 					
@@ -225,6 +226,7 @@ func _immobile_rotation():
 			if(immobile_rot_diff < 0):
 				immobile_rot = immobile_rot - deg_to_rad(6)
 				if (immobile_rot < immobile_rot_char_y + immobile_rot_diff):
+					immobile_rot_char_y = immobile_rot_char_y - ((2*PI)* floor((immobile_rot_char_y+(PI))/ (2*PI)))
 					immobile_rot = immobile_rot_char_y + immobile_rot_diff
 					immobile_turn_0 = false
 					
@@ -456,7 +458,7 @@ func _look_bone_rotation(_delta, bone_ids : Array[int], rot_copy : Vector2):
 
 	print("Head look Y end:" , rad_to_deg(_rot_val.y))
 
-	_rot_val.x = clampf(_rot_val.x + deg_to_rad(-5),deg_to_rad(-30),deg_to_rad(30))
+	_rot_val.x = clampf(_rot_val.x + deg_to_rad(-10),deg_to_rad(-30),deg_to_rad(30))
 	
 		#Set new bone rotations to torso, neck and head, according to mouse look
 		

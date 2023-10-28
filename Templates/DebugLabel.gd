@@ -27,7 +27,6 @@ func _ready():
 	c_c = get_node ("/root/Node3D/Belial/Belial_Godot/Node")
 	animLib = preload("res://Belial/Belial Imports/BE_Anim.glb")
 	my_state_machine_playback = my_anim_tree.get("parameters/playback")
-	print(my_state_machine_playback)
 	my_anim_tree.animation_started.connect(_st)
 	my_anim_player.get_current_animation()
 	
