@@ -3,8 +3,7 @@
 
 Godot 4.12
 
-Core 4 way movement should be alright, rotations should be alright except look rotations
-Will work on look rotations
+Core 4 way movement and camera system. Gonna add odther states/animations in the future.
 
 ![Pic](https://github.com/elXill/Belial/assets/61533529/23e8ced4-6343-4218-a8a7-0d974f6dbcfc)
 
