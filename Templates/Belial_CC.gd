@@ -16,6 +16,7 @@ var pivot_base_y : float = 0
 var surplus_rotation_y : float
 var mouse_dirty : bool = false
 var mouse_xy : Vector2 = Vector2(0,0)
+var forward_tap_time : float = 15
 var sensitivity : float = 0.002
 var camera_rotation : Vector3 = Vector3(0,0,0)
 var diagonal_rot_step : float = 0
@@ -64,6 +65,7 @@ enum ANIM_STATES {
 	BACK_STEP,
 	LEFT_STEP,
 	RIGHT_STEP,
+	SPRINT,
 	CHANGE_DIRECTION,
 	STAND_COM_TURN_LEFT,
 	STAND_COM_TURN_RIGHT
@@ -104,6 +106,9 @@ static var anim_state_dic : Dictionary = {
 	"THBE_COM-SSRight_Stop" : ANIM_STATES.RIGHT_STOP,
 	"THBE_COM-SSRight_StepB" : ANIM_STATES.RIGHT_STOP,
 	
+	"THBE-Sprint_Cycle_L" : ANIM_STATES.SPRINT,
+	"THBE-Sprint_Cycle_R" : ANIM_STATES.SPRINT,
+	
 	"THBE-CD_F_RT" : ANIM_STATES.CHANGE_DIRECTION,
 	"THBE-CD_F_LT" : ANIM_STATES.CHANGE_DIRECTION,
 	
@@ -122,6 +127,7 @@ var forward : bool = false
 var back : bool = false
 var left : bool = false
 var right : bool = false
+var sprint : bool = false
 
 func _ready():
 	
@@ -147,6 +153,8 @@ func _ready():
 
 func _physics_process(delta):
 	
+	forward_tap_time = forward_tap_time+1
+	
 	#Get Current State to use in script
 	current_state = anim_state_dic[my_anim_tree.get("parameters/playback").get_current_node()]
 	
@@ -171,7 +179,7 @@ func _state_logic(state : ANIM_STATES):
 			_immobile_rotation()
 			pass
 		##Moving forward
-		ANIM_STATES.FORWARD , ANIM_STATES.FORWARD_STEP, ANIM_STATES.FORWARD_STOP:
+		ANIM_STATES.FORWARD , ANIM_STATES.FORWARD_STEP, ANIM_STATES.FORWARD_STOP, ANIM_STATES.SPRINT:
 			_rotateable_motion()
 			_diagonal_rotation_calc()
 			_root_motion()
@@ -269,10 +277,6 @@ func _apply_rotations(delta):
 	0))
 
 
-
-
-
-
 ##Apply root motion, considering character rotation for diagonal runs
 func _root_motion():
 	char_body.position += my_anim_tree.get_root_motion_position().rotated(Vector3.UP ,char_body.rotation.y)
@@ -283,6 +287,12 @@ func _input_process(_delta):
 		anim_tree_parameters.forward = true
 	else :
 		anim_tree_parameters.forward = false
+		
+	if sprint == true:
+		anim_tree_parameters.sprint = true
+	else :
+		anim_tree_parameters.sprint = false
+	
 	if back == true:
 		anim_tree_parameters.back = true
 	else :
@@ -299,9 +309,30 @@ func _input_process(_delta):
 ##Get Inputs
 func _unhandled_input(event):
 	if Input.is_action_pressed("Forward"):
-		forward = true		
+		forward = true
+
 	else:
 		forward = false
+		sprint = false
+		
+		
+	if Input.is_action_just_pressed("Forward"):
+		if forward_tap_time < 15 :
+			sprint = true
+		forward_tap_time = 0
+	
+#	#CB:Debugging
+#	if Input.is_key_pressed(KEY_KP_6):
+#		forward_tap_time = 0
+#		if Input.is_action_pressed("Forward"):
+#			forward = true
+#			if forward_tap_time < 15 :
+#				sprint = true
+#			else:
+#				forward = false
+#				sprint = false
+#				forward_tap_time = 0
+	
 	if Input.is_action_pressed("Back"):
 		back = true
 	else:
@@ -351,6 +382,7 @@ func _surplus_rotation_calc_add(delta):
 	if (surplus_rotation_y/PI >0.8):
 		if(surplus_cam_rot_vel>delta*8):
 			surplus_cam_rot_vel = surplus_cam_rot_vel - delta
+
 
 func _surplus_rotation_calc_sub():
 	#Surplus rotation tracking movement
@@ -425,7 +457,6 @@ func _animation_override(delta):
 	pass
 
 
-	
 func _look_bone_rotation(_delta, bone_ids : Array[int], rot_copy : Vector2):
 	var _original_bone_transform : Array[Transform3D] = [Transform3D(),Transform3D(),Transform3D()]
 	var _new_bone_transform : Array[Transform3D] = [Transform3D(),Transform3D(),Transform3D()]

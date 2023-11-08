@@ -9,6 +9,8 @@ class_name AnimationTreeParameters
 @export var left 	: bool
 @export var right 	: bool
 
+@export var sprint  : bool
+
 @export var immobile_rotation_left  	: bool
 @export var immobile_rotation_right 	: bool
 var frame_data : int

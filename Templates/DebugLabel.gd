@@ -71,11 +71,13 @@ func _write():
 	anim_name + "  (" + str(transition_frame_count) + ") / " + str(frame) + "/" + str(length) + "\n" + \
 	 
 
-#	"G_Rotation = " + str(rad_to_deg(c_c.char_body.rotation.y)) + " + " + str(c_c.diagonal_rot_total) + "\n" + \
-#	"foward = "  + str(c_c.forward) + "\n" + \
-#	"back = "  + str(c_c.back) + "\n" + \
-#	"left = "  + str(c_c.left) + "\n" + \6
-#	"right = "  + str(c_c.right) + "\n" + \
+	"G_Rotation = " + str(rad_to_deg(c_c.char_body.rotation.y)) + " + " + str(c_c.diagonal_rot_total) + "\n" + \
+	"foward = "  + str(c_c.forward) + "\n" + \
+	"back = "  + str(c_c.back) + "\n" + \
+	"left = "  + str(c_c.left) + "\n" + \
+	"right = "  + str(c_c.right) + "\n" + \
+	"sprint = "  + str(c_c.sprint) + "\n" + \
+	"sprint timer= "  + str(c_c.forward_tap_time) + "\n" + \
 
 	"Delta Cam-Char : " + str(rad_to_deg(c_c.immobile_rot_diff))+ "\n" + \
 	"Char Rot:" +  str(rad_to_deg(c_c.char_body.basis.get_euler().y)) + "\n" + \
