@@ -77,6 +77,7 @@ func _write():
 	"left = "  + str(c_c.left) + "\n" + \
 	"right = "  + str(c_c.right) + "\n" + \
 	"sprint = "  + str(c_c.sprint) + "\n" + \
+	"crouch = "  + str(c_c.crouch) + "\n" + \
 	"sprint timer= "  + str(c_c.forward_tap_time) + "\n" + \
 
 	"Delta Cam-Char : " + str(rad_to_deg(c_c.immobile_rot_diff))+ "\n" + \

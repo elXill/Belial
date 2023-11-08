@@ -24,3 +24,9 @@ Notes to myself:
 	https://github.com/godotengine/godot/issues/83994
 	
 	-Keep and eye for multiple full circle turns and try to keep angles between +-180
+	
+	-Ninja do slide with movement+shift at zero, konoko can do it inside stepA animation
+	
+	-Character forearms may be scaled up to 1.16251, they look a bit small
+	
+	-Character arms and head colors are not coherent

@@ -10,6 +10,7 @@ class_name AnimationTreeParameters
 @export var right 	: bool
 
 @export var sprint  : bool
+@export var crouch	: bool
 
 @export var immobile_rotation_left  	: bool
 @export var immobile_rotation_right 	: bool

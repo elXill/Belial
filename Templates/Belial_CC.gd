@@ -68,7 +68,11 @@ enum ANIM_STATES {
 	SPRINT,
 	CHANGE_DIRECTION,
 	STAND_COM_TURN_LEFT,
-	STAND_COM_TURN_RIGHT
+	STAND_COM_TURN_RIGHT,
+	CROUCH_BACK,
+	CROUCH_FORWARD,
+	CROUCH_LEFT,
+	CROUCH_RIGHT,
 }
 
 static var anim_state_dic : Dictionary = {
@@ -119,7 +123,12 @@ static var anim_state_dic : Dictionary = {
 	"THBE-CD_RT_F" : ANIM_STATES.CHANGE_DIRECTION,
 	
 	"THBE_COM-StandTurn_LT" : ANIM_STATES.STAND_COM_TURN_LEFT,
-	"THBE_COM-StandTurn_RT" : ANIM_STATES.STAND_COM_TURN_RIGHT
+	"THBE_COM-StandTurn_RT" : ANIM_STATES.STAND_COM_TURN_RIGHT,
+	
+	"THBE_COM-CrouchBack" : ANIM_STATES.CROUCH_BACK,
+	"THBE_COM-CrouchForward" : ANIM_STATES.CROUCH_FORWARD,
+	"THBE_COM-CrouchLeft" : ANIM_STATES.CROUCH_LEFT,
+	"THBE_COM-CrouchRight" : ANIM_STATES.CROUCH_RIGHT,
 }
 
 #Input
@@ -128,6 +137,7 @@ var back : bool = false
 var left : bool = false
 var right : bool = false
 var sprint : bool = false
+var crouch : bool = false
 
 func _ready():
 	
@@ -179,23 +189,7 @@ func _state_logic(state : ANIM_STATES):
 			_immobile_rotation()
 			pass
 		##Moving forward
-		ANIM_STATES.FORWARD , ANIM_STATES.FORWARD_STEP, ANIM_STATES.FORWARD_STOP, ANIM_STATES.SPRINT:
-			_rotateable_motion()
-			_diagonal_rotation_calc()
-			_root_motion()
-		ANIM_STATES.BACK , ANIM_STATES.BACK_STEP, ANIM_STATES.BACK_STOP:
-			_rotateable_motion()
-			_diagonal_rotation_calc()
-			_root_motion()
-		ANIM_STATES.RIGHT , ANIM_STATES.RIGHT_STEP, ANIM_STATES.RIGHT_STOP:
-			_rotateable_motion()
-			_diagonal_rotation_calc()
-			_root_motion()
-		ANIM_STATES.LEFT , ANIM_STATES.LEFT_STEP, ANIM_STATES.LEFT_STOP:
-			_rotateable_motion()
-			_diagonal_rotation_calc()
-			_root_motion()
-		ANIM_STATES.CHANGE_DIRECTION:
+		_:
 			_rotateable_motion()
 			_diagonal_rotation_calc()
 			_root_motion()
@@ -287,12 +281,10 @@ func _input_process(_delta):
 		anim_tree_parameters.forward = true
 	else :
 		anim_tree_parameters.forward = false
-		
 	if sprint == true:
 		anim_tree_parameters.sprint = true
 	else :
 		anim_tree_parameters.sprint = false
-	
 	if back == true:
 		anim_tree_parameters.back = true
 	else :
@@ -305,12 +297,15 @@ func _input_process(_delta):
 		anim_tree_parameters.right = true
 	else :
 		anim_tree_parameters.right = false
+	if crouch == true:
+		anim_tree_parameters.crouch = true
+	else :
+		anim_tree_parameters.crouch = false
 
 ##Get Inputs
 func _unhandled_input(event):
 	if Input.is_action_pressed("Forward"):
 		forward = true
-
 	else:
 		forward = false
 		sprint = false
@@ -345,6 +340,10 @@ func _unhandled_input(event):
 		right = true
 	else:
 		right = false
+	if Input.is_action_pressed("Crouch"):
+		crouch = true
+	else:
+		crouch = false
 
 	if event is InputEventMouseMotion:
 		mouse_dirty = true
@@ -515,7 +514,6 @@ static func delta_angle(current: float, target: float)-> float :
 	if (num > PI):
 		num = num - 2*PI
 	
-
 	return num;
 
 static func repeat(t : float, length : float) -> float:
