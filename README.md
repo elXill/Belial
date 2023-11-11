@@ -30,3 +30,11 @@ Notes to myself:
 	-Character forearms may be scaled up to 1.16251, they look a bit small
 	
 	-Character arms and head colors are not coherent
+	
+	Animation Notes - Technical:
+	
+	-Don't make root bone stop or move sharply camera follows it and it causes jitteryness
+	
+	-If W value of quaternion changes to negative during an animation like rolling or turning,
+		multiply it with -1 next frame to avoid full rotations during animation transition.
+		
