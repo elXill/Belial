@@ -13,6 +13,9 @@ var anim_tree_parameters : AnimationTreeParameters
 var my_anim_player : AnimationPlayer = null
 
 var pivot_base_y : float = 0
+var frame : int = 0 ## This value maybe should be made a singleton in the future
+var input_subframe: int = 0
+
 var surplus_rotation_y : float
 var mouse_dirty : bool = false
 var mouse_xy : Vector2 = Vector2(0,0)
@@ -140,6 +143,8 @@ static var anim_state_dic : Dictionary = {
 	"THBE_SSRight_Roll" :ANIM_STATES.RIGHT_ROLL,
 }
 
+
+var frame_key_memory : Array[bool] = [false,false,false,false,false,false]
 #Input
 var forward : bool = false
 var back : bool = false
@@ -173,6 +178,7 @@ func _ready():
 func _physics_process(delta):
 	
 	forward_tap_time = forward_tap_time+1
+	frame = frame+1
 	
 	#Get Current State to use in script
 	current_state = anim_state_dic[my_anim_tree.get("parameters/playback").get_current_node()]
@@ -313,6 +319,10 @@ func _input_process(_delta):
 
 ##Get Inputs
 func _unhandled_input(event):
+	
+	input_subframe = input_subframe+1
+	print("forward bool: " , forward , frame, "/", input_subframe)
+	print("forward pressed: ",Input.is_action_pressed("Forward"), frame, "/",input_subframe)
 	if Input.is_action_pressed("Forward"):
 		forward = true
 	else:

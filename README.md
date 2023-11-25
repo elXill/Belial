@@ -3,7 +3,7 @@
 
 Godot 4.12
 
-Core 4 way movement and camera system. Gonna add odther states/animations in the future.
+Rolls are done, it just needs a dash roll and then i will start with crouching and crouch movements..
 
 ![Pic](https://github.com/elXill/Belial/assets/61533529/23e8ced4-6343-4218-a8a7-0d974f6dbcfc)
 
@@ -38,3 +38,4 @@ Notes to myself:
 	-If W value of quaternion changes to negative during an animation like rolling or turning,
 		multiply it with -1 next frame to avoid full rotations during animation transition.
 		
+	- I may seperate run crouch roll animation into two parts and make second dive a chain/combo with a second crouch during first one
