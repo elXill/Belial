@@ -1,0 +1,14 @@
+[gd_resource type="ORMMaterial3D" load_steps=4 format=3 uid="uid://ddnlhod8ja1mv"]
+
+[ext_resource type="Texture2D" uid="uid://bmb0yqkphjf45" path="res://Belial/Character/Textures/Torso/BelialTorso_MAT_Albedo.png" id="1_6u8ab"]
+[ext_resource type="Texture2D" uid="uid://dx2t1o2jk1n4l" path="res://Belial/Character/Textures/Torso/BelialTorso_MAT_Normal.png" id="2_44pty"]
+[ext_resource type="Texture2D" uid="uid://bmm7xq0672w5c" path="res://Belial/Character/Textures/Torso/BelialTorso_MAT_ORM.png" id="3_rw7n3"]
+
+[resource]
+albedo_texture = ExtResource("1_6u8ab")
+orm_texture = ExtResource("3_rw7n3")
+normal_enabled = true
+normal_texture = ExtResource("2_44pty")
+ao_enabled = true
+ao_light_affect = 1.0
+backlight = Color(0.513726, 0.686275, 0.705882, 1)

@@ -1,0 +1,11 @@
+[gd_resource type="ORMMaterial3D" load_steps=4 format=3 uid="uid://bywu8vtwcp651"]
+
+[ext_resource type="Texture2D" uid="uid://c17ol40s37rl7" path="res://Belial/Character/Textures/Stiletto/BelialStiletto_MAT_Albedo.png" id="1_dv4wh"]
+[ext_resource type="Texture2D" uid="uid://frc283hb2e7q" path="res://Belial/Character/Textures/Stiletto/BelialStiletto_MAT_Normal.png" id="2_w3wrc"]
+[ext_resource type="Texture2D" uid="uid://cccjy56ux78rw" path="res://Belial/Character/Textures/Stiletto/BelialStiletto_MAT_ORM.png" id="3_vv38v"]
+
+[resource]
+albedo_texture = ExtResource("1_dv4wh")
+orm_texture = ExtResource("3_vv38v")
+normal_enabled = true
+normal_texture = ExtResource("2_w3wrc")

@@ -1,0 +1,152 @@
+[gd_scene load_steps=14 format=3 uid="uid://cbyc7tbfgcaod"]
+
+[ext_resource type="Script" path="res://Templates/Intervention.gd" id="1_3r8pv"]
+[ext_resource type="PackedScene" uid="uid://cr7yk45ctopit" path="res://Belial/Belial-AP.tscn" id="2_8ho7i"]
+[ext_resource type="Script" path="res://Templates/CameraScript.gd" id="3_ukayo"]
+[ext_resource type="Script" path="res://Templates/DebugLabel-AP.gd" id="4_3k1xn"]
+[ext_resource type="Material" uid="uid://o5k71kj5ik4j" path="res://Environment/Material/Floor_Mat.tres" id="4_jsbh0"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_0xm2l"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_5n5xi"]
+font_size = 12
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_l7spr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wwc6m"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lvnh8"]
+
+[sub_resource type="Sky" id="Sky_4y18p"]
+sky_material = SubResource("ProceduralSkyMaterial_lvnh8")
+process_mode = 3
+
+[sub_resource type="Environment" id="Environment_r0hsv"]
+background_mode = 2
+background_energy_multiplier = 0.75
+sky = SubResource("Sky_4y18p")
+ambient_light_color = Color(0.396078, 0.270588, 0.294118, 1)
+ambient_light_sky_contribution = 0.75
+tonemap_mode = 2
+ssr_enabled = true
+ssao_enabled = true
+fog_light_color = Color(0.4, 0.298039, 0.345098, 1)
+fog_light_energy = 0.86
+fog_sun_scatter = 0.05
+fog_density = 0.0002
+adjustment_enabled = true
+adjustment_saturation = 0.95
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_vsl32"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="InterventionNode" type="Node" parent="."]
+process_mode = 3
+script = ExtResource("1_3r8pv")
+
+[node name="Belial-AP" parent="." instance=ExtResource("2_8ho7i")]
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 1.11759e-08, 2.98023e-08, 3.72529e-09, 1, 0, 5.96046e-08, 0, 1, 0.656113, 2.44421e-09, 2.46072)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 6.61743e-24, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_0xm2l")
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.981704, 0.125979, 0.142784, -0.154586, 0.965114, 0.211325, -0.11118, -0.229531, 0.966931, 0.23991, 3.54868, -0.0388135)
+light_color = Color(0.984314, 0.921569, 0.890196, 1)
+shadow_enabled = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.959259, 0.224696, -0.17127, 0.109381, 0.854293, 0.508153, 0.260494, 0.468717, -0.844066, 0, 1.78266, 0)
+light_color = Color(0.717647, 0.815686, 1, 1)
+light_energy = 0.2
+light_angular_distance = 10.0
+directional_shadow_mode = 0
+sky_mode = 1
+
+[node name="AnimDebugCanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+
+[node name="CameraMarginContainer" type="MarginContainer" parent="AnimDebugCanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GridContainer" type="GridContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(958, 1080)
+render_target_update_mode = 4
+
+[node name="BackCam" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer/SubViewport" node_paths=PackedStringArray("target")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+fov = 45.0
+script = ExtResource("3_ukayo")
+target = NodePath("../../../../../../Belial-AP/CameraPivot/SpringArm3D/BackCameraPoint")
+look_target_address = "/root/Node3D/Belial-AP/CameraPivot"
+
+[node name="SubViewportContainer2" type="SubViewportContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer2"]
+handle_input_locally = false
+size = Vector2i(958, 1080)
+render_target_update_mode = 4
+
+[node name="SideCam" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer2/SubViewport" node_paths=PackedStringArray("target")]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0, 0)
+fov = 45.0
+script = ExtResource("3_ukayo")
+target = NodePath("../../../../../../Belial-AP/CameraPivot/SpringArm3D2/SideCameraPoint")
+look_target_address = "/root/Node3D/Belial-AP/CameraPivot"
+
+[node name="Panel" type="Panel" parent="AnimDebugCanvasLayer"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -284.0
+offset_bottom = 802.0
+grow_horizontal = 0
+
+[node name="Label" type="Label" parent="AnimDebugCanvasLayer/Panel"]
+layout_mode = 0
+offset_left = 27.0
+offset_top = 12.0
+offset_right = 261.0
+offset_bottom = 173.0
+label_settings = SubResource("LabelSettings_5n5xi")
+script = ExtResource("4_3k1xn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
+disable_mode = 1
+
+[node name="Floor" type="MeshInstance3D" parent="StaticBody3D"]
+material_override = ExtResource("4_jsbh0")
+mesh = SubResource("PlaneMesh_l7spr")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, -1, 0)
+shape = SubResource("BoxShape3D_wwc6m")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_r0hsv")
+camera_attributes = SubResource("CameraAttributesPractical_vsl32")
