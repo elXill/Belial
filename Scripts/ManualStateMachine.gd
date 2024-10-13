@@ -24,6 +24,8 @@ var current_clip : StringName
 var current_sub_state : int
 var frame_count : int = 0
 var blend_time
+var blending_interruption = CCM.TransitionInterruptionEnum.FORWARD_INTER
+var blending_mode
 
 ##Animation Blending Vars
 var blend_frame = 0
@@ -57,14 +59,13 @@ enum TransitionIndexEnum{
 	SUB_STATE = 4,
 	TRANSITION_TIME = 5,
 	SWITCH_MODE = 6,
-	INTERRUPTION_MODE = 7,
+	BLENDING_INTERRUPTION = 7,
 	SHORT_END = 8,
 	TRANSITION_CONDITION = 9
 	}
 
 ##Global State Enums
 var current_state : CCM.StateEnum
-var direction : CCM.DirectionEnum
 
 #endregion
 
@@ -123,64 +124,20 @@ func _ready():
 
 func _physics_process(delta):
 	current_frame = current_frame+1
-#Whole State Machine
-	print(states_array[current_state])
-	print(current_clip)
-	print("BLEND TIME: ",get_blend_time(&"BE_Anim/THBE-Run_StepA",&"BE_Anim/THBE-BackRun_StepA"))
+
 	for sub_state_transition in transitions_array[current_state][current_sub_state]:
 		if(sub_state_transition[TransitionIndexEnum.TRANSITION_CONDITION].call()):
-			match sub_state_transition[TransitionIndexEnum.SWITCH_MODE]:
-				CCM.TransitionModeEnum.IMMIDIATE:
-					if(blend_time == 0):
-						# Jump to second frame of next animation
-						pending_new_state(sub_state_transition)
-						advance(delta)
-						current_frame = 1
-						print("Immidiate , ZERO blend , " , get_current_animation())
-					else:
-						pending_new_state(sub_state_transition)
-						advance(0)
-						current_frame = 0
-						print("Immidiate , blend , " , get_current_animation())
-					break
-				CCM.TransitionModeEnum.AT_END:
-					next_state = sub_state_transition[TransitionIndexEnum.TO_STATE]
-					blend_time = sub_state_transition[TransitionIndexEnum.TRANSITION_TIME]
-					if(blend_time == 0):
-						if((frame_count<current_frame)):
-							# Jump to second frame of next animation
-							pending_new_state(sub_state_transition)
-							advance(delta)
-							current_frame = 1
-							print("At End , ZERO blend , " , get_current_animation())
-					else:
-						if((frame_count<current_frame+2) and (blend_time > 0)):
-							# Cut current animation 2 frames early for a good transition
-							pending_new_state(sub_state_transition)
-							advance(0)
-							print("At End , blend , " , get_current_animation())
-							print(blend_time)
-							current_frame = 0
-					break
-				CCM.TransitionModeEnum.SHORT_END:
-					next_state = sub_state_transition[TransitionIndexEnum.TO_STATE]
-					blend_time = sub_state_transition[TransitionIndexEnum.TRANSITION_TIME]
-					if(sub_state_transition[TransitionIndexEnum.SHORT_END] == current_frame):
-						pending_new_state(sub_state_transition)
-						advance(0)
-						current_frame = 0
-						print("ShortEnd , Zero blend, " , get_current_animation())
-					else:
-						if(frame_count<current_frame+2):
-							# Cut current animation 2 frames early for a good transition
-							pending_new_state(sub_state_transition)
-							advance(0)
-							print("At End , blend , " , get_current_animation())
-							print(blend_time)
-							current_frame = 0
-					break
-					
-	
+			match blending_interruption:
+				CCM.TransitionInterruptionEnum.FORWARD_INTER:
+					print('FORWARD INTERUPTION')
+					if(check_transition_mode(sub_state_transition, delta)):
+						break
+				CCM.TransitionInterruptionEnum.NO_INTER:
+					print('NO INTERUPTION')
+					if(!blending):
+						if(check_transition_mode(sub_state_transition, delta)):
+							break
+
 	if(blending):
 		if(total_blend_frames > blend_frame+1):
 			blend_frame += 1
@@ -190,6 +147,8 @@ func _physics_process(delta):
 
 	if(current_animation_length-current_animation_position == 0):
 		unregistered_root_motion = true
+		
+	
 
 	#print("Current_Anim Length Secs  :", current_animation_length-current_animation_position)
 	#print("Current_Anim Length Frame :", (current_animation_length-current_animation_position)/0.0166666666666667)
@@ -199,6 +158,55 @@ func _physics_process(delta):
 	#print("current_frame :" , current_frame)
 	#
 	#print("current+left :", current_frame + (current_animation_length-current_animation_position)/0.0166666666666667)
+
+
+func check_transition_mode(_sub_state_transition, _delta):
+	match _sub_state_transition[TransitionIndexEnum.SWITCH_MODE]:
+		CCM.TransitionModeEnum.IMMIDIATE:
+			blending_mode = CCM.TransitionModeEnum.IMMIDIATE
+			if(blend_time == 0):
+				# Jump to second frame of next animation
+				check_transition(_sub_state_transition,_delta,1)
+				print("Immidiate , ZERO blend , " , get_current_animation())
+			else:
+				check_transition(_sub_state_transition,0,0)
+				print("Immidiate , blend , " , get_current_animation())
+			return true
+		CCM.TransitionModeEnum.AT_END:
+			blending_mode = CCM.TransitionModeEnum.AT_END
+			next_state = _sub_state_transition[TransitionIndexEnum.TO_STATE]
+			blend_time = _sub_state_transition[TransitionIndexEnum.TRANSITION_TIME]
+			print(blend_time)
+			if(blend_time == 0):
+				if((frame_count<current_frame)):
+					# Jump to second frame of next animation
+					check_transition(_sub_state_transition,_delta,1)
+					print("At End , ZERO blend , " , get_current_animation())
+			else:
+				# Cut current animation 2 frames early for a good transition
+				if((frame_count<current_frame+1) and (blend_time > 0)):
+					check_transition(_sub_state_transition,0,0)
+					print("At End , blend , " , get_current_animation())
+			return true
+		CCM.TransitionModeEnum.SHORT_END:
+			blending_mode = CCM.TransitionModeEnum.SHORT_END
+			next_state = _sub_state_transition[TransitionIndexEnum.TO_STATE]
+			blend_time = _sub_state_transition[TransitionIndexEnum.TRANSITION_TIME]
+			if(_sub_state_transition[TransitionIndexEnum.SHORT_END] == current_frame):
+				check_transition(_sub_state_transition,0,0)
+				print("ShortEnd , Zero blend, " , get_current_animation())
+			else:
+				# Cut current animation 2 frames early for a good transition
+				if(frame_count<current_frame+1):
+					check_transition(_sub_state_transition,0,0)
+					print("At End , blend , " , get_current_animation())
+			return true
+
+
+func check_transition(_sub_state_transition, _delta, _frame):
+		pending_new_state(_sub_state_transition)
+		advance(_delta)
+		current_frame = _frame
 
 func set_blending_times(animationStatesData:Array):
 	for state in states_array: #states
@@ -224,12 +232,13 @@ func new_state(anim_name):
 		blending = false
 		first_frame = true
 
-func pending_new_state(sub_state_transition):
-	current_state = sub_state_transition[TransitionIndexEnum.TO_STATE]
-	current_sub_state = sub_state_transition[TransitionIndexEnum.SUB_STATE]
-	prior_state = sub_state_transition[TransitionIndexEnum.FROM_STATE]
-	next_state = sub_state_transition[TransitionIndexEnum.TO_STATE]
-	blend_time = sub_state_transition[TransitionIndexEnum.TRANSITION_TIME]
+func pending_new_state(_sub_state_transition):
+	current_state = _sub_state_transition[TransitionIndexEnum.TO_STATE]
+	current_sub_state = _sub_state_transition[TransitionIndexEnum.SUB_STATE]
+	prior_state = _sub_state_transition[TransitionIndexEnum.FROM_STATE]
+	next_state = _sub_state_transition[TransitionIndexEnum.TO_STATE]
+	blend_time = _sub_state_transition[TransitionIndexEnum.TRANSITION_TIME]
+	blending_interruption = _sub_state_transition[TransitionIndexEnum.BLENDING_INTERRUPTION]
 	frame_count = states_array[current_state][StateIndexEnum.FRAME][current_sub_state]
-	print(sub_state_transition[TransitionIndexEnum.CLIP_NAME])
-	play(sub_state_transition[TransitionIndexEnum.CLIP_NAME])
+	print(_sub_state_transition[TransitionIndexEnum.CLIP_NAME])
+	play(_sub_state_transition[TransitionIndexEnum.CLIP_NAME])

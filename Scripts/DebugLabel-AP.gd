@@ -1,4 +1,4 @@
-extends Label
+extends RichTextLabel
 
 var my_anim_player : AnimationPlayer
 var frame : int = 0
@@ -83,7 +83,12 @@ func _write():
 	text = "FPS :" + str(Engine.get_frames_per_second()) + "\n" + \
 	anim_name + "  " + transition_string + str(my_anim_player.current_frame) + "/" + str(my_anim_player.frame_count) + "\n"+ "\n" +\
 	
-	"Root Accu = "  + str(my_anim_player.blending) + "\n" +"\n" + \
+	'[b]Transition Properties[/b]' + "\n"  + \
+	"Blending: "  + str(my_anim_player.blending) + "\n"  + \
+	'Blending Mode: ' + str(CCM.TransitionModeEnum.keys()[my_anim_player.blending_mode]) + "\n" + \
+	'Interruption Mode: ' + str(CCM.TransitionInterruptionEnum.keys()[my_anim_player.blending_interruption]) + "\n" +"\n" + \
+	
+	
 	
 	"State: " + str(CCM.StateEnum.keys()[my_anim_player.current_state]) + "\n" + \
 	"Future State: " + str(CCM.StateEnum.keys()[my_anim_player.next_state]) + "\n" + \

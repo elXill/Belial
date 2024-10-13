@@ -14,7 +14,7 @@ var back 		: bool
 var left 		: bool
 var right 		: bool
 var crouch 		: bool
-var crouch_just	: bool
+var just_crouch	: bool
 var sprint 		: bool
 var immobile_rotation_left 		: bool
 var immobile_rotation_right 	: bool
@@ -66,9 +66,9 @@ func _input(event):
 	else:
 		crouch = false
 	if Input.is_action_just_pressed("Crouch"):
-		crouch_just = true
+		just_crouch = true
 	else:
-		crouch_just = false
+		just_crouch = false
 		
 	if event is InputEventMouseMotion:
 		mouse_dirty = true

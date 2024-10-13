@@ -1,11 +1,13 @@
-[gd_scene load_steps=15 format=3 uid="uid://cbyc7tbfgcaod"]
+[gd_scene load_steps=17 format=3 uid="uid://cbyc7tbfgcaod"]
 
 [ext_resource type="Script" path="res://Scripts/Intervention.gd" id="1_8f6p1"]
 [ext_resource type="PackedScene" uid="uid://cr7yk45ctopit" path="res://Belial/Belial-AP.tscn" id="2_pgnn6"]
 [ext_resource type="Script" path="res://Scripts/CameraScript.gd" id="3_giovw"]
 [ext_resource type="Script" path="res://Scripts/Belial_CC_AP.gd" id="3_ny0hh"]
 [ext_resource type="Script" path="res://Scripts/DebugLabel-AP.gd" id="4_g00ay"]
+[ext_resource type="FontFile" uid="uid://bt3n2n8w702w7" path="res://Font/FiraCode-Light.ttf" id="5_1g7k1"]
 [ext_resource type="Material" uid="uid://o5k71kj5ik4j" path="res://Environment/Material/Floor_Mat.tres" id="5_afasn"]
+[ext_resource type="FontFile" uid="uid://cuorqdfh3u5em" path="res://Font/FiraCode-SemiBold.ttf" id="6_vdor7"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_0xm2l"]
 
@@ -155,12 +157,37 @@ offset_bottom = 802.0
 grow_horizontal = 0
 
 [node name="Label" type="Label" parent="AnimDebugCanvasLayer/Panel"]
+visible = false
 layout_mode = 0
 offset_left = 27.0
 offset_top = 12.0
 offset_right = 261.0
 offset_bottom = 173.0
 label_settings = SubResource("LabelSettings_5n5xi")
+
+[node name="MarginContainer" type="MarginContainer" parent="AnimDebugCanvasLayer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="AnimDebugCanvasLayer/Panel/MarginContainer"]
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 1, 0, 1)
+theme_override_fonts/normal_font = ExtResource("5_1g7k1")
+theme_override_fonts/bold_font = ExtResource("6_vdor7")
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+bbcode_enabled = true
+text = "[b]Example[/b]
+Text"
+fit_content = true
 script = ExtResource("4_g00ay")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
