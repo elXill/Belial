@@ -16,22 +16,51 @@ var right 		: bool
 var crouch 		: bool
 var just_crouch	: bool
 var sprint 		: bool
-var immobile_rotation_left 		: bool
+var jump		: bool
+var just_jump	: bool
+var jump_relased: bool
+
+## Triggers
+var mid_air 					: bool
+var immobile_rotation_left  	: bool
 var immobile_rotation_right 	: bool
+
 var input_memory : PackedInt32Array
+
+enum ACTION_INPUT {
+	FORWARD,
+	BACK,
+	LEFT,
+	RIGHT,
+	CROUCH,
+	JUMP,
+}
+
+enum jump_type{
+	NEUT_JUMP,
+	FORWARD_JUMP,
+	BACK_JUMP,
+	LEFT_JUMP,
+	RIGHT_JUMP,
+	
+	FORWARD_HOP,
+	BACK_HOP,
+	LEFT_HOP,
+	RIGHT_HOP,
+}
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	input_memory.resize(7) 
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	forward_tap_time = forward_tap_time+1
 	input_memory[0] = input_memory[0] + 1 
 	if(forward_relased and INPUT_BUFFER<input_memory[0]):
 		forward = false
 		sprint = false
 
-func _process(delta):
+func _process(_delta):
 	input_subframe = input_subframe+1
 
 
@@ -40,10 +69,11 @@ func _input(event):
 	if Input.is_action_pressed("Forward"):
 		forward = true
 		forward_relased = false
+	else:
+		forward = false
 	if Input.is_action_just_released("Forward"):
 		forward_relased = true
-		input_memory[0] = 0
-
+		input_memory[ACTION_INPUT.FORWARD] = 0
 	if Input.is_action_just_pressed("Forward"):
 		if forward_tap_time < 15 :
 			sprint = true
@@ -69,6 +99,19 @@ func _input(event):
 		just_crouch = true
 	else:
 		just_crouch = false
+		
+	if Input.is_action_pressed("Jump"):
+		jump = true
+		jump_relased = false
+	else:
+		jump = false
+	if Input.is_action_just_released("Jump"):
+		jump_relased = true
+		input_memory[ACTION_INPUT.JUMP] = 0
+	if Input.is_action_just_pressed("Jump"):
+		just_jump = true
+	else:
+		just_jump = false
 		
 	if event is InputEventMouseMotion:
 		mouse_dirty = true

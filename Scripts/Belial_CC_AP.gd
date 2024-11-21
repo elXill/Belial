@@ -5,9 +5,11 @@ class_name Belial_CC_AP
 ##Example; root motion values always being 0 get_root_motion_position() depending on place used in script,
 ##Example; causes a lag for set_bone_global_pose_no_override() function (1 or 2 frames), when used with conjunction of BoneAttachment3D and Marker3D.
 
+const GRAVITY : float = -0.5
+
 var camera_pivot : Node3D
 @export var state_machine : ManualStateMachine
-var char_body : Node3D
+var char_body : CharacterBody3D
 var difference: Vector3 = Vector3(0,0,0)
 var prev_root_motion_position_accumulator : Vector3
 
@@ -33,6 +35,7 @@ var old_bone_positions: Array[Vector3] = [Vector3(0,0,0),Vector3(0,0,0)]
 
 var char_base_y : float = 0
 var current_state : StateEnum
+var prior_state : StateEnum
 
 
 var body_base_transform : Transform3D = Transform3D()
@@ -51,16 +54,24 @@ var immobile_rot_ended : bool = false
 var override_next : bool = false
 var immobile_rot_diff_allthetime
 
-var frame_key_memory : Array[bool] = [false,false,false,false,false,false]
+var off_ground_counter : int = 0
+
+## Input Properties
+var jump_charge : int = 0
+var jump_flag : bool = false
+var jump_velocity : Vector3 = Vector3(0,0,0)
+var gravity_velocity : float = 0.0
+
+var frame_key_memory : Array[bool] = [false,false,false,false,false,false] ##??? Su anda gerekli degil
 
 func _ready():
 	
 	my_skeleton = get_node("Belial-AP/Belial_Godot/Belial_Godot_SemiConnectRig/Skeleton3D")
-	char_body = get_node ("Belial-AP")
+	char_body = get_node ("Belial-AP/Belial_Godot")
 	body_base_transform.basis = char_body.basis
 	GlobalPlayerInput.char_ready = true
 	my_anim_player = get_node("Belial-AP/Belial_Godot/AnimationPlayer")
-	camera_pivot = get_node("Belial-AP/CameraPivot")
+	camera_pivot = get_node("Belial-AP/Belial_Godot/CameraPivot")
 	pivot_base_y = camera_pivot.basis.get_euler().y
 
 	
@@ -80,73 +91,121 @@ func _physics_process(delta):
 	
 	#Get Current State to use in script
 	current_state = state_machine.current_state
+	prior_state = state_machine.prior_state
+	
+	print("Is on floor:", char_body.is_on_floor())
 	
 	_camera_rotation()
 	_state_logic(current_state)
 	immobile_rot_diff_allthetime = delta_angle(immobile_rot_char_y, camera_rotation.y)
-	_animation_override(delta)
+	_fall_check()
 	_apply_rotations(delta)
-	
-	
+	#This can be toned down, effect just head or closed according to state
+	_animation_override(delta)
 
 func _state_logic(state : StateEnum):
 	match state:
 		##Immobile; standing or turning
 		StateEnum.IDLE, StateEnum.TURNING_LEFT, StateEnum.TURNING_RIGHT:
 			_immobile_rotation()
-			pass
-		##Moving forward
+			
+		StateEnum.SLIDE:
+			GlobalPlayerInput.sprint = false
+			_rotateable_motion()
+			_diagonal_rotation_calc()
+			_root_motion()
+		
+		StateEnum.JUMP_NEUTRAL:
+			_get_jump_input_profile()
+		
+		StateEnum.MID_JUMP:
+			_jump_motion()
+			_clean_jump_input_profile()
+			
+		StateEnum.LANDING:
+			jump_flag = false
+			_rotateable_motion()
+			_root_motion()
+			#gravity_velocity = 0
+		##Rotation and motion process
 		_:
 			_rotateable_motion()
 			_diagonal_rotation_calc()
 			_root_motion()
-			
 
-	
+func _get_jump_input_profile():
+	if(GlobalPlayerInput.jump == true):
+		jump_charge += 1
+	if(GlobalPlayerInput.forward):
+		jump_velocity.z += 1
+	if(GlobalPlayerInput.back):
+		jump_velocity.z -= 1
+	if(GlobalPlayerInput.left):
+		jump_velocity.x += 1
+	if(GlobalPlayerInput.right):
+		jump_velocity.x -= 1
+
+func _clean_jump_input_profile(): 
+	jump_charge = 0
+	jump_velocity = Vector3(0,0,0)
+
+func _fall_check():
+	if(char_body.is_on_floor()):
+		GlobalPlayerInput.mid_air = false
+		off_ground_counter = 0
+		gravity_velocity = 0
+	else:
+		GlobalPlayerInput.mid_air = true
+		off_ground_counter += 1
+		gravity_velocity += GRAVITY
+
 func _immobile_rotation():
 	
 	
 	immobile_rot_diff = delta_angle(immobile_rot_char_y, camera_rotation.y)
 	
 	#If turnable states and diff > 70 --> immobile turn = true
-	if(current_state == StateEnum.IDLE or \
-	current_state == StateEnum.TURNING_LEFT or \
-	current_state == StateEnum.TURNING_RIGHT ):
+	if(	current_state == StateEnum.IDLE or \
+		current_state == StateEnum.TURNING_LEFT or \
+		current_state == StateEnum.TURNING_RIGHT ):
+		if(prior_state == StateEnum.LANDING):
+			_rotate_for_immobile(0)
+		else:
+			_rotate_for_immobile(70)
+
+func _rotate_for_immobile(trigger_rot_difference):
+	if (immobile_rot_diff>deg_to_rad(trigger_rot_difference)):
+		immobile_turn = true
+		GlobalPlayerInput.immobile_rotation_left = true
+		GlobalPlayerInput.immobile_rotation_right = false
+
+	if (immobile_rot_diff<deg_to_rad(-trigger_rot_difference)):
+		immobile_turn = true
+		GlobalPlayerInput.immobile_rotation_right = true
+		GlobalPlayerInput.immobile_rotation_left = false
+
+	if(immobile_turn == true):
+		if(immobile_rot_diff > 0):
+			immobile_rot = immobile_rot + deg_to_rad(6)
+			if (immobile_rot > immobile_rot_char_y + immobile_rot_diff):
+				immobile_rot_char_y = immobile_rot_char_y - ((2*PI)* floor((immobile_rot_char_y+(PI))/ (2*PI)))
+				immobile_rot = immobile_rot_char_y + immobile_rot_diff
+				immobile_turn_0 = false
+				
+
+		if(immobile_rot_diff < 0):
+			immobile_rot = immobile_rot - deg_to_rad(6)
+			if (immobile_rot < immobile_rot_char_y + immobile_rot_diff):
+				immobile_rot_char_y = immobile_rot_char_y - ((2*PI)* floor((immobile_rot_char_y+(PI))/ (2*PI)))
+				immobile_rot = immobile_rot_char_y + immobile_rot_diff
+				immobile_turn_0 = false
 		
-		if (immobile_rot_diff>deg_to_rad(70)):
-			immobile_turn = true
-			GlobalPlayerInput.immobile_rotation_left = true
-			GlobalPlayerInput.immobile_rotation_right = false
-
-		if (immobile_rot_diff<deg_to_rad(-70)):
-			immobile_turn = true
-			GlobalPlayerInput.immobile_rotation_right = true
-			GlobalPlayerInput.immobile_rotation_left = false
-
-		if(immobile_turn == true):
-			if(immobile_rot_diff > 0):
-				immobile_rot = immobile_rot + deg_to_rad(6)
-				if (immobile_rot > immobile_rot_char_y + immobile_rot_diff):
-					immobile_rot_char_y = immobile_rot_char_y - ((2*PI)* floor((immobile_rot_char_y+(PI))/ (2*PI)))
-					immobile_rot = immobile_rot_char_y + immobile_rot_diff
-					immobile_turn_0 = false
-					
-
-			if(immobile_rot_diff < 0):
-				immobile_rot = immobile_rot - deg_to_rad(6)
-				if (immobile_rot < immobile_rot_char_y + immobile_rot_diff):
-					immobile_rot_char_y = immobile_rot_char_y - ((2*PI)* floor((immobile_rot_char_y+(PI))/ (2*PI)))
-					immobile_rot = immobile_rot_char_y + immobile_rot_diff
-					immobile_turn_0 = false
-					
-
 		if(immobile_turn and !immobile_turn_0):
 			immobile_rot_char_y = immobile_rot
 			immobile_turn = false
 			immobile_turn_0 = true
 			GlobalPlayerInput.immobile_rotation_left = false
 			GlobalPlayerInput.immobile_rotation_right = false
-
 
 func _rotateable_motion():
 	##This makes immobile rotation not go over 360 and cause multiple full rotations
@@ -177,73 +236,34 @@ func _apply_rotations(delta):
 	camera_rotation.y + surplus_rotation_y - immobile_rot-diagonal_rot_total, \
 	0))
 
+var _jump_charge : int = 0
+var _jump_velocity : Vector3 = Vector3 (0,0,0)
+func _jump_motion():
+	if(!jump_flag):
+		if(jump_charge <= 2):
+			jump_charge = 3
+		_jump_charge = jump_charge
+		_jump_velocity = jump_velocity
+		_jump_velocity.y = 2*jump_charge - GRAVITY
+		jump_flag = true
+	
+			
+	char_body.velocity = _jump_velocity
+	char_body.velocity.y += gravity_velocity
+	char_body.move_and_slide()
 
 ##Apply root motion, considering character rotation for diagonal runs
-func _root_motion():	
-	char_body.position += state_machine.get_root_motion_position().rotated(Vector3.UP ,char_body.rotation.y)
-
-	if(state_machine.unregistered_root_motion):
-		#print("Additional Force")
-		#print("Last Rootmotion : " , state_machine.states_array[state_machine.current_state][state_machine.StateIndexEnum.LAST_ROOT_MOTION].rotated(Vector3.UP ,char_body.rotation.y))
-		state_machine.unregistered_root_motion = false
+func _root_motion():
+	char_body.velocity = 100*state_machine.get_root_motion_position().rotated(Vector3.UP ,char_body.rotation.y)
+	char_body.velocity.y += gravity_velocity
+	char_body.move_and_slide()
+	
+	if(state_machine.unregistered_root_motion_last):
+		state_machine.unregistered_root_motion_last = false
 		char_body.position += state_machine.states_array[state_machine.current_state][state_machine.StateIndexEnum.LAST_ROOT_MOTION].rotated(Vector3.UP ,char_body.rotation.y)
-
-###Get Inputs
-#func _input(event):
-	#
-	#input_subframe = input_subframe+1
-	#print("forward bool: " , GlobalPlayerInput.forward , frame, "/", input_subframe)
-	#print("forward pressed: ",Input.is_action_pressed("Forward"), frame, "/",input_subframe)
-	#if Input.is_action_pressed("Forward"):
-		#GlobalPlayerInput.forward = true
-	#else:
-		#GlobalPlayerInput.forward = false
-		#GlobalPlayerInput.sprint = false
-		#
-		#
-	#if Input.is_action_just_pressed("Forward"):
-		#if forward_tap_time < 15 :
-			#GlobalPlayerInput.sprint = true
-		#forward_tap_time = 0
-	#
-##	#CB:Debugging
-##	if Input.is_key_pressed(KEY_KP_6):
-##		forward_tap_time = 0
-##		if Input.is_action_pressed("Forward"):
-##			forward = true
-##			if forward_tap_time < 15 :
-##				sprint = true
-##			else:
-##				forward = false
-##				sprint = false
-##				forward_tap_time = 0
-	#
-	#if Input.is_action_pressed("Back"):
-		#GlobalPlayerInput.back = true
-	#else:
-		#GlobalPlayerInput.back = false
-	#if Input.is_action_pressed("Left"):
-		#GlobalPlayerInput.left = true
-	#else:
-		#GlobalPlayerInput.left = false
-	#if Input.is_action_pressed("Right"):
-		#GlobalPlayerInput.right = true
-	#else:
-		#GlobalPlayerInput.right = false
-	#if Input.is_action_pressed("Crouch"):
-		#GlobalPlayerInput.crouch = true
-	#else:
-		#GlobalPlayerInput.crouch = false
-#
-	#if event is InputEventMouseMotion:
-		#mouse_dirty = true
-		#mouse_xy = Vector2(event.relative.x, event.relative.y)
-	#if Input.is_action_just_pressed("ui_cancel"):
-		#if(Input.mouse_mode == Input.MOUSE_MODE_VISIBLE):
-			#get_tree().quit()
-		#Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	#if Input.is_action_just_pressed("ui_accept"):
-			#Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if(state_machine.unregistered_root_motion_first):
+		state_machine.unregistered_root_motion_first = false
+		char_body.position += state_machine.states_array[state_machine.current_state][state_machine.StateIndexEnum.FIRST_ROOT_MOTION].rotated(Vector3.UP ,char_body.rotation.y)
 
 ##Mouse Camera Rotation
 func _camera_rotation():
@@ -272,7 +292,6 @@ func _surplus_rotation_calc_add(delta):
 		if(surplus_cam_rot_vel>delta*8):
 			surplus_cam_rot_vel = surplus_cam_rot_vel - delta
 
-
 func _surplus_rotation_calc_sub():
 	#Surplus rotation tracking movement
 	if(surplus_rotation_y > 0):
@@ -295,6 +314,7 @@ func _surplus_rotation_calc_sub():
 ##If two movement buttons are pressed, with the exception of opposites, rotate character slowly according to buttons pressed
 var _pass: int = 0
 var _steady_rotation_motion : bool = false
+
 func _diagonal_rotation_calc():
 	var _diagonal_rotation_target : float = 0
 	var _turned_once: bool = false;
@@ -480,6 +500,29 @@ func _diagonal_rotation_calc():
 						diagonal_rot_total = deg_to_rad(-45)
 						return
 					diagonal_rot_total = 0
+		StateEnum.CROUCH_WALK:
+			_steady_rotation_motion = false
+			if(GlobalPlayerInput.forward == true):
+				if (GlobalPlayerInput.right == true):
+					_pass = 0
+					_diagonal_rotation_target = deg_to_rad(-45)
+					diagonal_rot_step = deg_to_rad(3)
+				if (GlobalPlayerInput.left == true):
+					_pass = 0
+					_diagonal_rotation_target = deg_to_rad(+45)
+					diagonal_rot_step = deg_to_rad(3)
+		StateEnum.CROUCH_BACKWALK:
+			_steady_rotation_motion = false
+			if(GlobalPlayerInput.back == true):
+				if (GlobalPlayerInput.right == true):
+					_pass = 0
+					_diagonal_rotation_target = deg_to_rad(+45)
+					diagonal_rot_step = deg_to_rad(3)
+				if (GlobalPlayerInput.left == true):
+					_pass = 0
+					_diagonal_rotation_target = deg_to_rad(-45)
+					diagonal_rot_step = deg_to_rad(3)
+				
 		_:
 			_steady_rotation_motion = false
 			_pass = 0
@@ -499,10 +542,6 @@ func _diagonal_rotation_calc():
 				diagonal_rot_total = _diagonal_rotation_target ##This is kind of fail safe incase things go wrong.
 	else:
 		_pass = 0
-		#diagonal_rot_step = deg_to_rad(0)
-	#print(diagonal_rot_step)
-	#print(_diagonal_rotation_target, "   ", diagonal_rot_total)
-	#print("_pass: ",_pass)
 
 
 ## Override animation to make character look around according to camera rotation
@@ -513,8 +552,6 @@ func _animation_override(delta):
 
 	_look_bone_rotation(delta, bone_array, _head_look_around)
 
-	
-	#print("head euler2 = " + str(_end_bone_transforms[0].basis.get_euler()))
 	pass
 
 
@@ -524,36 +561,16 @@ func _look_bone_rotation(_delta, bone_ids : Array[int], rot_copy : Vector2):
 	var _rot_val : Vector2 = rot_copy
 	const _weights: Array[float] = [0.4,0.4,0.3]
 	
-	#print("-------------")
-	#print("Head look Y RAW:" , rad_to_deg(_rot_val.y))
-	#print("body:", rad_to_deg(char_body.rotation.y))
-	#print("cam rot y:", rad_to_deg(camera_rotation.y))
-	
-	
-	
-	#print("rot_copy y:" , rad_to_deg(rot_copy.y))
-	
 	rot_copy.y = rot_copy.y - ((2*PI)* floor((rot_copy.y+(PI))/ (2*PI)))
-	
-	#print("rot_copy.y +-180 loop:" , rad_to_deg(_rot_val.y))
 	
 		##Wrap-up rotation nicely to front 180 degree
 	if (rot_copy.y > PI/2 and rot_copy.y < PI):
-		#print("BAM!")
 		_rot_val.y = PI - rot_copy.y ##VE PI nin KATLARI
 	elif (rot_copy.y > -PI and rot_copy.y < -PI/2):
-		#print("B0M!")
 		_rot_val.y = -PI - rot_copy.y
-#	elif(rot_copy.y > PI or rot_copy.y < -PI):?????
-#		_rot_val.y = 0???????
-
-
-	#print("Head look Y end:" , rad_to_deg(_rot_val.y))
-
+	
 	_rot_val.x = clampf(_rot_val.x + deg_to_rad(-10),deg_to_rad(-30),deg_to_rad(30))
 	
-		#Set new bone rotations to torso, neck and head, according to mouse look
-		
 	for bones in len(bone_ids): 
 		
 		if(bones!=0):
@@ -561,11 +578,10 @@ func _look_bone_rotation(_delta, bone_ids : Array[int], rot_copy : Vector2):
 		else:
 			_new_bone_transform[bones] = my_skeleton.get_bone_global_pose_no_override(bone_ids[bones])
 		
-			
 		_new_bone_transform[bones].basis = Basis.from_euler(Vector3(_new_bone_transform[bones].basis.get_euler().x- _rot_val.x,
 		_new_bone_transform[bones].basis.get_euler().y- _rot_val.y,
 		_new_bone_transform[bones].basis.get_euler().z))
-
+		
 		my_skeleton.set_bone_global_pose_override(bone_ids[bones], _new_bone_transform[bones],_weights[bones], true)
 		
 	pass

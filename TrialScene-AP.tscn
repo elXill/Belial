@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://cbyc7tbfgcaod"]
+[gd_scene load_steps=18 format=3 uid="uid://cbyc7tbfgcaod"]
 
 [ext_resource type="Script" path="res://Scripts/Intervention.gd" id="1_8f6p1"]
 [ext_resource type="PackedScene" uid="uid://cr7yk45ctopit" path="res://Belial/Belial-AP.tscn" id="2_pgnn6"]
@@ -10,6 +10,8 @@
 [ext_resource type="FontFile" uid="uid://cuorqdfh3u5em" path="res://Font/FiraCode-SemiBold.ttf" id="6_vdor7"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_0xm2l"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_awfjj"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_5n5xi"]
 font_size = 12
@@ -55,7 +57,7 @@ state_machine = NodePath("Belial-AP/Belial_Godot/AnimationPlayer")
 [node name="Belial-AP" parent="Character_Controller" instance=ExtResource("2_pgnn6")]
 
 [node name="BoneAttachment3D" parent="Character_Controller/Belial-AP/Belial_Godot/Belial_Godot_SemiConnectRig/Skeleton3D" index="7"]
-transform = Transform3D(0.999999, -1.49067e-13, -2.38419e-07, -6.97802e-08, 0.95621, -0.29268, 2.27978e-07, 0.29268, 0.95621, 1.77635e-15, 0.963344, -0.0169078)
+transform = Transform3D(0.906085, -0.082362, -0.415002, 0.0265735, 0.990011, -0.138461, 0.422261, 0.114429, 0.899223, -0.0018185, 0.842264, 0.00682252)
 
 [node name="BoneAttachment3D2" parent="Character_Controller/Belial-AP/Belial_Godot/Belial_Godot_SemiConnectRig/Skeleton3D" index="8"]
 transform = Transform3D(1, 2.22044e-16, -2.22044e-16, -2.22044e-16, 1, -9.01326e-08, 2.22044e-16, 9.01326e-08, 1, 0, 0, 0)
@@ -66,6 +68,13 @@ transform = Transform3D(1, 1.11759e-08, 2.98023e-08, 3.72529e-09, 1, 0, 5.96046e
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
 transform = Transform3D(1, 0, 0, 6.61743e-24, 1, 0, 0, 0, 1, 0, 0.5, 0)
 mesh = SubResource("BoxMesh_0xm2l")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Node3D/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 6.61743e-24, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Node3D/MeshInstance3D/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 6.61743e-24, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape3D_awfjj")
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.981704, 0.125979, 0.142784, -0.154586, 0.965114, 0.211325, -0.11118, -0.229531, 0.966931, 0.23991, 3.54868, -0.0388135)
@@ -102,15 +111,15 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(638, 1080)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="BackCam" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer/SubViewport" node_paths=PackedStringArray("target")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 fov = 45.0
 script = ExtResource("3_giovw")
-target = NodePath("../../../../../../Character_Controller/Belial-AP/CameraPivot/SpringArm3D/BackCameraPoint")
-look_target_address = "/root/Node3D/Character_Controller/Belial-AP/CameraPivot"
+target = NodePath("../../../../../../Character_Controller/Belial-AP/Belial_Godot/CameraPivot/SpringArm3D/BackCameraPoint")
+look_target_address = "/root/Node3D/Character_Controller/Belial-AP/Belial_Godot/CameraPivot"
 
 [node name="SubViewportContainer2" type="SubViewportContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer"]
 layout_mode = 2
@@ -120,15 +129,15 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer2"]
 handle_input_locally = false
-size = Vector2i(637, 1080)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="SideCam" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer2/SubViewport" node_paths=PackedStringArray("target")]
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0, 0)
 fov = 45.0
 script = ExtResource("3_giovw")
-target = NodePath("../../../../../../Character_Controller/Belial-AP/CameraPivot/SpringArm3D2/SideCameraPoint")
-look_target_address = "/root/Node3D/Character_Controller/Belial-AP/CameraPivot"
+target = NodePath("../../../../../../Character_Controller/Belial-AP/Belial_Godot/CameraPivot/SpringArm3D2/SideCameraPoint")
+look_target_address = "/root/Node3D/Character_Controller/Belial-AP/Belial_Godot/CameraPivot"
 
 [node name="SubViewportContainer3" type="SubViewportContainer" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer"]
 layout_mode = 2
@@ -138,15 +147,15 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer3"]
 handle_input_locally = false
-size = Vector2i(637, 1080)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="Forward" type="Camera3D" parent="AnimDebugCanvasLayer/CameraMarginContainer/GridContainer/SubViewportContainer3/SubViewport" node_paths=PackedStringArray("target")]
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0, 0)
 fov = 45.0
 script = ExtResource("3_giovw")
-target = NodePath("../../../../../../Character_Controller/Belial-AP/CameraPivot/SpringArm3D3/ForwardCameraPoint")
-look_target_address = "/root/Node3D/Character_Controller/Belial-AP/CameraPivot"
+target = NodePath("../../../../../../Character_Controller/Belial-AP/Belial_Godot/CameraPivot/SpringArm3D3/ForwardCameraPoint")
+look_target_address = "/root/Node3D/Character_Controller/Belial-AP/Belial_Godot/CameraPivot"
 
 [node name="Panel" type="Panel" parent="AnimDebugCanvasLayer"]
 anchors_preset = 1
@@ -157,7 +166,6 @@ offset_bottom = 802.0
 grow_horizontal = 0
 
 [node name="Label" type="Label" parent="AnimDebugCanvasLayer/Panel"]
-visible = false
 layout_mode = 0
 offset_left = 27.0
 offset_top = 12.0

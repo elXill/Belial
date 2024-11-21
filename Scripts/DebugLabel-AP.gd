@@ -3,7 +3,6 @@ extends RichTextLabel
 var my_anim_player : AnimationPlayer
 var frame : int = 0
 var anim = "empty"
-var animLibs
 var length
 var print_anim = "not initialized"
 var c_c
@@ -19,12 +18,12 @@ var transition_total_frame
 var prior_position : Vector3 = Vector3(0,0,0)
 var skeleton : Skeleton3D
 var torso_bone
+var ending_frame_disp
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	my_anim_player = get_node ("/root/Node3D/Character_Controller/Belial-AP/Belial_Godot/AnimationPlayer")
 	c_c = get_node ("/root/Node3D/Character_Controller")
-	animLibs = [preload("res://Belial/Animations/BE_Movement.glb"), preload("res://Belial/Animations/BE_Movement_Crouch.glb")]
 	
 	
 	my_anim_player.connect("current_animation_changed" , Callable(self,"anim_change"), 1)
@@ -51,30 +50,30 @@ func _physics_process(_delta):
 	
 	#if(my_anim_player.is_playing()):
 		#print(roundf(my_anim_player.get_current_animation_position()*60))
-		
+
 func _write():
 	transition_total_frame = my_anim_player.total_blend_frames
 	transition_frame_count = my_anim_player.blend_frame
 	
+	##There are times anim_name doesn't exist, why?
 	anim_name = my_anim_player.get_current_animation()
-	print(anim_name)
-	anim_name = anim_name.get_slice("/", 1)
-	
-	if(anim_name != "none" && anim_name != ""):
-		#print(animLib.get_animation(anim_name).length)
-		#print(animLib.get_animation(anim_name).length*60)
-		for animLib in animLibs:
-			if (animLib.get_animation(anim_name) != null):
-				length = roundf(animLib.get_animation(anim_name).length*60)
+	if(anim_name != ''):
+		print('x', anim_name)
+		length = roundf(my_anim_player.get_animation(anim_name).length*60)
+		anim_name = anim_name.get_slice("/", 1)
 	else:
-		anim_name = prior_anim_name.get_slice("/", 1)
-		frame=1
-		
+		anim_name = 'NULL'
+	
 	if(prior_anim_name == my_anim_player.get_current_animation()):
 		frame = frame+1
 
 	
 	prior_anim_name = my_anim_player.get_current_animation()
+	
+	if (str(my_anim_player.ending_frame) == '0'):
+		ending_frame_disp = ''
+	else :
+		ending_frame_disp = str(my_anim_player.ending_frame)
 	
 	if(my_anim_player.blending):
 		transition_string = "(" + str(transition_frame_count) + "/" + str(transition_total_frame) + ") "
@@ -85,31 +84,38 @@ func _write():
 	
 	'[b]Transition Properties[/b]' + "\n"  + \
 	"Blending: "  + str(my_anim_player.blending) + "\n"  + \
-	'Blending Mode: ' + str(CCM.TransitionModeEnum.keys()[my_anim_player.blending_mode]) + "\n" + \
-	'Interruption Mode: ' + str(CCM.TransitionInterruptionEnum.keys()[my_anim_player.blending_interruption]) + "\n" +"\n" + \
-	
+	'Blending Mode: ' + str(CCM.TransitionModeEnum.keys()[my_anim_player.blending_mode]) + ' ' + str(ending_frame_disp) + "\n" + \
+	'Interruption Mode: ' + str(CCM.TransitionInterruptionEnum.keys()[my_anim_player.blending_interruption]) + "\n" + "\n" + \
 	
 	
 	"State: " + str(CCM.StateEnum.keys()[my_anim_player.current_state]) + "\n" + \
 	"Future State: " + str(CCM.StateEnum.keys()[my_anim_player.next_state]) + "\n" + \
-	"Prior State: " +  str(CCM.StateEnum.keys()[my_anim_player.prior_state]) + "\n" + \
+	"Prior State: " +  str(CCM.StateEnum.keys()[my_anim_player.prior_state]) + "\n" + "\n" + \
 	 
-
+	"Mixer Applied Func: " + str(my_anim_player.find_animation) + "\n" + "\n" + \
+	
 	#"G_Rotation = " + str(rad_to_deg(c_c.char_body.rotation.y)) + " + " + str(c_c.diagonal_rot_total) + "\n" + \
 	"forward = "  + str(GlobalPlayerInput.forward) + str(GlobalPlayerInput.input_memory[0]) + "\n" + \
 	"back = "  + str(GlobalPlayerInput.back) + "\n" + \
 	"left = "  + str(GlobalPlayerInput.left) + "\n" + \
 	"right = "  + str(GlobalPlayerInput.right) + "\n" + \
 	"sprint = "  + str(GlobalPlayerInput.sprint) + "\n" + \
-	"crouch = "  + str(GlobalPlayerInput.crouch) + "\n" +"\n" + \
+	"crouch = "  + str(GlobalPlayerInput.crouch) + "\n" + "\n" + \
+	
+	"air = " + str(GlobalPlayerInput.mid_air) + "\n" +\
+	"jump charge = " + str(c_c.jump_charge) + "\n" + \
+	"jump velocity = " + str(c_c._jump_velocity) + "\n" +"\n" + \
 	
 	"root motion= " + str(my_anim_player.get_root_motion_position())+ "\n" + \
-	"Root Acul Diff = " + str (my_anim_player.first_frame)+ "\n" + \
+	"UnReg Root Motion = Last : " + str (my_anim_player.unregistered_root_motion_last) + ' / First :  ' + str (my_anim_player.unregistered_root_motion_first)+ "\n" + \
 	"Torso Position = " + str (skeleton.get_bone_global_pose(torso_bone).origin - my_anim_player.get_root_motion_position())+ "\n" + "\n" + \
 		
 	"Character Position = " + str(c_c.char_body.global_position) + "\n" + \
 	"Character Position Diff = " + str(c_c.char_body.global_position - prior_position) + "\n" + \
-
+	"Gravity Velocity = " + str(c_c.gravity_velocity) + "\n" + \
+	
+	
+	
 	#"sprint timer= "  + str(c_c.state_machine.state_import.forward_tap_time) + "\n" + \
 #
 	#"Delta Cam-Char : " + str(rad_to_deg(c_c.immobile_rot_diff))+ "\n" + \
@@ -135,5 +141,7 @@ func _write():
 	"\n" + \
 	"DIAGONAL" + "\n" + \
 	"Diagonal rotation = " + str(rad_to_deg(c_c.diagonal_rot_total))
+	
+	print()
 	
 
